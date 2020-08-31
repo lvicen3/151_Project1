@@ -1,5 +1,5 @@
 let w;
-
+let mouse_counter = 0;
   
 function setup() {
   createCanvas(400,400);
@@ -13,6 +13,10 @@ function draw() {
   // circle(100,100,100);
   w.step(); 
   w.display();
+
+  if(keyIsPressed)
+    if (key == 's' || key == 'S') 
+      saveCanvas('sample', 'png');
 }
 
 class Walker {
@@ -25,7 +29,16 @@ class Walker {
     stroke(10);
     // point(this.x,this.y);
     fill(100,150,150);
-    circle(this.x,this.y,50,50);
+    if(mouseIsPressed){
+      if(mouse_counter < 20)
+        mouse_counter++;
+      else {
+        mouse_counter = 0;
+      }
+    } 
+
+    ellipse(this.x,this.y,25+3*mouse_counter,25-2*mouse_counter);
+    
   }
 
   step(){
