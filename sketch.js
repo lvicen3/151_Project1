@@ -1,35 +1,49 @@
-// const { FILL } = require("./p5");
+let w;
 
-let x = 0;
-let y = 0;
-let x_speed = 3;
-let y_speed = 3;
-
+  
 function setup() {
-  // put setup code here
   createCanvas(400,400);
-  background(100,100,100);
-
+  w = new Walker();
+  background(255);
 }
 
 function draw() {
-  
-  fill(20,30,100);
-  if(mouseIsPressed)
-  circle(mouseX,mouseY,10,10);
-  // ellipse(120,120,20,100);
-  // fill(150);
-  
-  // if (x>width-100 || (x < 0 && x_speed <0)){
-  //   x_speed = -1*x_speed;
-  // } 
-  
-  // if (y>height-100 || (y < 0 && y_speed <0)){
-  //   y_speed = -1*y_speed;
-  // } 
-
-
-  // x+= x_speed;
-  // y+= y_speed;
-
+  // stroke(0);
+  // point(20,20);
+  // circle(100,100,100);
+  w.step(); 
+  w.display();
 }
+
+class Walker {
+  constructor(){
+    this.x = width/2;
+    this.y = height/2;
+  }
+
+  display(){
+    stroke(0);
+    point(this.x,this.y);
+  }
+
+  step(){
+    let follow_mouse = Math.floor(Math.random()*2);
+    
+    if(follow_mouse){
+      this.x < mouseX ? this.x++ : this.x-- ; 
+      this.y < mouseY ? this.y++ : this.y-- ;
+    } else {
+      this.x += (Math.random()*2)-1;
+      this.y += (Math.random()*2)-1;
+    }
+
+  }
+}
+
+function randn_bm() {
+  var u = 0, v = 0;
+  while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+  while(v === 0) v = Math.random();
+  return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+}
+
