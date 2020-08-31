@@ -4,7 +4,7 @@ let w;
 function setup() {
   createCanvas(400,400);
   w = new Walker();
-  background(255);
+  background(150);
 }
 
 function draw() {
@@ -22,8 +22,10 @@ class Walker {
   }
 
   display(){
-    stroke(0);
-    point(this.x,this.y);
+    stroke(10);
+    // point(this.x,this.y);
+    fill(100,150,150);
+    circle(this.x,this.y,50,50);
   }
 
   step(){
