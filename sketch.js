@@ -1,64 +1,82 @@
-let w;
-let mouse_counter = 0;
-  
-function setup() {
-  createCanvas(400,400);
-  w = new Walker();
-  background(150);
+const particles = [];
+
+function setup(){
+    createCanvas(window.innerWidth, window.innerHeight);
+    
+    // const particlesLength = Math.floor(window.innerWidth/10);
+
+    // for(let i = 0; i < particlesLength; i++){
+    //     particles.push(new Particle());
+    // }
+    
+
 }
 
-function draw() {
-  // stroke(0);
-  // point(20,20);
-  // circle(100,100,100);
-  w.step(); 
-  w.display();
+function draw(){
+    background(55, 100, 144);
 
-  if(keyIsPressed)
-    if (key == 's' || key == 'S') 
-      saveCanvas('sample', 'png');
-}
-
-class Walker {
-  constructor(){
-    this.x = width/2;
-    this.y = height/2;
-  }
-
-  display(){
-    stroke(10);
-    // point(this.x,this.y);
-    fill(100,150,150);
+    particles.forEach((p,index)=>{   
+        p.update();
+        p.draw();
+        p.checkParticles(particles.slice(index));
+    });
     if(mouseIsPressed){
-      if(mouse_counter < 20)
-        mouse_counter++;
-      else {
-        mouse_counter = 0;
-      }
-    } 
+        particles.push(new Particle(mouseX,mouseY));
+    }
+}
 
-    ellipse(this.x,this.y,25+3*mouse_counter,25-2*mouse_counter);
-    
-  }
+function mousePressed(){
+    particles.push(new Particle(mouseX,mouseY));
+}
 
-  step(){
-    let follow_mouse = Math.floor(Math.random()*2);
+
+class Particle{
+    constructor(x=-1,y=-1){
+        //Position
+        if(x < 0 || y < 0){
+            this.pos = createVector(random(width),random(height));
+        } else {
+            this.pos = createVector(x,y);
+        }
+        this.size = random(5);
+        //Velocity
+        this.vel = createVector(random(-2,2),random(-2,2));
+        this.z_vel = map(random(),0,1,0.05,0.1);
+
+    }
     
-    if(follow_mouse){
-      this.x < mouseX ? this.x++ : this.x-- ; 
-      this.y < mouseY ? this.y++ : this.y-- ;
-    } else {
-      this.x += (Math.random()*2)-1;
-      this.y += (Math.random()*2)-1;
+    draw(){
+        noStroke();
+        fill('rgba(255,255,255,0.5');
+        circle(this.pos.x,this.pos.y,this.size);
     }
 
-  }
-}
+    update(){
+        this.pos.add(this.vel);
+        this.size+=this.z_vel;
+        this.edges();
+    }
 
-function randn_bm() {
-  var u = 0, v = 0;
-  while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
-  while(v === 0) v = Math.random();
-  return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
-}
+    edges(){
+        if(this.pos.x < 0 || this.pos.x > width){
+            this.vel.x *= -1;
+        }
+        if(this.pos.y < 0 || this.pos.y > height){
+            this.vel.y *= -1;
+        }
+        if(this.size < 0 || this.size > 10)
+            this.z_vel *= -1;
+    }
 
+    checkParticles(particles){
+        particles.forEach(particle =>{
+            const d = dist(this.pos.x,this.pos.y,particle.pos.x,particle.pos.y);
+
+            if(d < 120){
+                stroke('rgba(255,255,255,0.1)');
+                line(this.pos.x,this.pos.y,particle.pos.x,particle.pos.y);
+            }
+        });
+    }
+
+}
