@@ -1,16 +1,25 @@
-let G = 5;
+let G = 2;
+let D = 200;
 
 const particles = [];
-const colors2 = [['red','rgba(255,0,0,255)'],['green','rgba(0,255,0,255)'],['blue','rgba(0,0,255,255)']];
+
 let colors;
-const lines = [];
+let points = false;
+let dSlider;
+let gSlider;
+let initParticle;
+// const colors2 = [['red','rgba(255,0,0,255)'],['green','rgba(0,255,0,255)'],['blue','rgba(0,0,255,255)']];
+
 
 
 function setup(){
   createCanvas(window.innerWidth, window.innerHeight);
-  background(0);
 
+  initNParticle = (window.innerWidth*window.innerHeight)/100000;
+  console.log(initNParticle);
+  // Define the color palettes
   colors  = [
+    
     ['red', color('#ff124f')],
     ['fuschia', color('#ff0a0')],
     ['pink', color('#fe75fe')],
@@ -18,25 +27,70 @@ function setup(){
     ['dark purple', color('#120458')]
   ];
 
-  for (let i = 0; i < 50; i++) {
+  // Set black clear blackground
+  background(0);
+
+  // Distance Slider creation and styling
+  dSlider = createSlider(10,300,150,10);
+  dSlider.position(window.innerWidth- 100  ,10);
+  dSlider.style('width','70px');
+  dSlider.hide();
+
+  // Gravity Slider creation and styling
+  gSlider = createSlider(0.5,5,1.5,0.1);
+  gSlider.position(window.innerWidth - 200 ,10);
+  gSlider.style('width','70px');
+  gSlider.hide();
+
+  // Create an initial cluster
+  for (let i = 0; i < initNParticle; i++) {
     particles.push(new Particle());
   }
 }
 
 function draw(){
+  if(points)
+    background(0);
 
-    particles.forEach((p,index)=>{   
-        p.update();
-        p.draw();
-        p.checkParticles(particles.slice(index));
-    });
-    if(mouseIsPressed){
-        particles.push(new Particle(mouseX,mouseY));
-    }
+  // Check and draw every particle
+  particles.forEach((p,index)=>{   
+      p.update();
+      p.draw();
+      p.checkParticles(particles.slice(index));
+  });
+
+  if(mouseX >= window.innerWidth-200 && mouseY <= 100){
+    dSlider.show();
+    gSlider.show();
+  }
+  else{
+    dSlider.hide();
+    gSlider.hide();
+  }
+
+  D = dSlider.value();
+  G = gSlider.value();
 }
 
 function mousePressed(){
-    particles.push(new Particle(mouseX,mouseY));
+  if(mouseX < window.innerWidth - 200 && mouseY > 100)
+    for (let i = 0; i < 5; i++) 
+      particles.push(new Particle(random(mouseX-20,mouseX+20),random(mouseY-20,mouseY+20))); 
+}
+
+function keyPressed(){
+  switch(key){
+    case'd':
+      points = !points;
+      background(0);
+      break;
+    case'r':
+      background(0);
+      particles.splice(0,particles.length);
+      for (let i = 0; i < initNParticle; i++) 
+        particles.push(new Particle());
+  }
+  
 }
 
 
@@ -51,7 +105,7 @@ class Particle{
 
       // Particle properties
       this.size = 5;
-      this.mass = random(1,5);
+      this.mass = random(1,20);
       this.color = random(colors);
 
       // Movement properties
@@ -60,13 +114,17 @@ class Particle{
     }
     
     draw(){
-      noStroke();
-      fill(this.color[1]);
-      // circle(this.pos.x,this.pos.y,this.size);
+      if(points){
+        noStroke();
+        fill(this.color[1]);
+        circle(this.pos.x,this.pos.y,this.size);
+      }
     }
 
     update(){
       this.vel.add(this.acc);
+      // this.vel.x = constrain(this.vel.x,-5,5);
+      // this.vel.y = constrain(this.vel.y,-5,5);
       this.acc.set(0,0);
       this.pos.add(this.vel);
       this.edges();
@@ -84,9 +142,11 @@ class Particle{
     checkParticles(particles){
       particles.forEach(particle =>{
         const d = dist(this.pos.x,this.pos.y,particle.pos.x,particle.pos.y);
-        if(this.color[0] == particle.color[0] && d < 100 && this !== particle){
-          stroke(this.color[1]);
-          line(this.pos.x,this.pos.y,particle.pos.x,particle.pos.y);
+        if(this.color[0] == particle.color[0] && d < D && this !== particle){
+          if(!points){
+            stroke(this.color[1]);
+            line(this.pos.x,this.pos.y,particle.pos.x,particle.pos.y);
+          }
           this.attract(particle);
         }
         
