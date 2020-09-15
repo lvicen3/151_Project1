@@ -8,24 +8,16 @@ let points = false;
 let dSlider;
 let gSlider;
 let initParticle;
-// const colors2 = [['red','rgba(255,0,0,255)'],['green','rgba(0,255,0,255)'],['blue','rgba(0,0,255,255)']];
-
-
+let canvasCounter = 0;
+let palettes;
 
 function setup(){
-  createCanvas(window.innerWidth, window.innerHeight);
+  // Set canvas
+  let canvas = createCanvas(window.innerWidth, window.innerHeight);
 
-  initNParticle = (window.innerWidth*window.innerHeight)/100000;
-  console.log(initNParticle);
   // Define the color palettes
-  colors  = [
-    
-    ['red', color('#ff124f')],
-    ['fuschia', color('#ff0a0')],
-    ['pink', color('#fe75fe')],
-    ['light purple', color('#7a04eb')],
-    ['dark purple', color('#120458')]
-  ];
+  palettes = new ColorPalettes();
+  colors = palettes.getCurrentPalette();
 
   // Set black clear blackground
   background(0);
@@ -43,6 +35,7 @@ function setup(){
   gSlider.hide();
 
   // Create an initial cluster
+  initNParticle = (window.innerWidth*window.innerHeight)/100000;
   for (let i = 0; i < initNParticle; i++) {
     particles.push(new Particle());
   }
@@ -59,6 +52,7 @@ function draw(){
       p.checkParticles(particles.slice(index));
   });
 
+  //Check if sliders should be shown
   if(mouseX >= window.innerWidth-200 && mouseY <= 100){
     dSlider.show();
     gSlider.show();
@@ -68,6 +62,7 @@ function draw(){
     gSlider.hide();
   }
 
+  // Get slider values
   D = dSlider.value();
   G = gSlider.value();
 }
@@ -81,92 +76,87 @@ function mousePressed(){
 function keyPressed(){
   switch(key){
     case'd':
+    case'D':
       points = !points;
       background(0);
       break;
     case'r':
+    case'R':
       background(0);
       particles.splice(0,particles.length);
       for (let i = 0; i < initNParticle; i++) 
         particles.push(new Particle());
+      break;
+    case's':
+    case'S':
+      canvasCounter++;
+      saveCanvas(canvas,`picture${canvasCounter}`,'jpg');
+      break;
+    case'c':
+    case'C':
+      background(0);
+      colors = palettes.getNextPalette();
+      particles.forEach(p=>{
+        p.color = random(colors);
+      });
   }
   
 }
 
+class ColorPalettes{
+  constructor(){
+    this.currentColor = 0;
+    this.palettes = [];
 
-class Particle{
-    constructor(x=-1,y=-1){
-      // Set init position
-      if(x < 0 || y < 0){
-          this.pos = createVector(random(width),random(height));
-      } else {
-          this.pos = createVector(x,y);
-      }
-
-      // Particle properties
-      this.size = 5;
-      this.mass = random(1,20);
-      this.color = random(colors);
-
-      // Movement properties
-      this.vel = createVector(random(-2,2),random(-2,2));
-      this.acc = createVector(0,0);
-    }
+    // Vaporwave aesthetic
+    this.palettes.push([
+      ['red', color('#ff124f')],
+      ['fuschia', color('#ff0a0')],
+      ['pink', color('#fe75fe')],
+      ['light purple', color('#7a04eb')],
+      ['dark purple', color('#120458')]
+    ]);
     
-    draw(){
-      if(points){
-        noStroke();
-        fill(this.color[1]);
-        circle(this.pos.x,this.pos.y,this.size);
-      }
-    }
+    // Light browns
+    this.palettes.push([
+      ['wheat', color('#edd4b2')],
+      ['tumbleweed', color('#d0a98f')],
+      ['dark byzantium', color('#4d243d')],
+      ['pale silver', color('#cac2b5')],
+      ['almond', color('#ecdcc9')]
+    ]);
 
-    update(){
-      this.vel.add(this.acc);
-      // this.vel.x = constrain(this.vel.x,-5,5);
-      // this.vel.y = constrain(this.vel.y,-5,5);
-      this.acc.set(0,0);
-      this.pos.add(this.vel);
-      this.edges();
-    }
+    // Blue to red
+    this.palettes.push([
+      ['blue sapphire', color('#086788')],
+      ['blue green', color('#07a0c3')],
+      ['jonquil', color('#f0c808')],
+      ['papaya whip', color('#fff1d0')],
+      ['max red', color('#dd1c1a')]
+    ]);
 
-    edges(){
-      if(this.pos.x < 0 || this.pos.x > width){
-          this.vel.x *= -1;
-      }
-      if(this.pos.y < 0 || this.pos.y > height){
-          this.vel.y *= -1;
-      }
-    }
+    // Greyscale
+    this.palettes.push([
+      ['battleship grey', color('#8a8a8a')],
+      ['quick silver', color('#a3a3a3')],
+      ['davys grey', color('#525252')],
+      ['gray x 11 gray', color('#b8b8b8')],
+      ['cultured', color('#f7f7f7')]
+    ]);
 
-    checkParticles(particles){
-      particles.forEach(particle =>{
-        const d = dist(this.pos.x,this.pos.y,particle.pos.x,particle.pos.y);
-        if(this.color[0] == particle.color[0] && d < D && this !== particle){
-          if(!points){
-            stroke(this.color[1]);
-            line(this.pos.x,this.pos.y,particle.pos.x,particle.pos.y);
-          }
-          this.attract(particle);
-        }
-        
-      });
-    }
+  }
 
-    // PHYSICS METHODS
-    applyForce(force){
-      let f = p5.Vector.div(force,this.mass);
-      this.acc.add(f);
-    }
+  getCurrentPalette(){
+    return this.palettes[this.currentColor];
+  }
+  
+  getNextPalette(){
+    if(++this.currentColor >= this.palettes.length)
+      this.currentColor = 0;
+    // console.log(this.currentColor);
+    return this.palettes[this.currentColor];
+  }
 
-    attract(particle){
-      let force = p5.Vector.sub(this.pos,particle.pos);
-      let distanceSq = constrain(force.magSq(),100,1000);
-      let strength = (G * (this.mass*particle.mass))/ distanceSq;
-
-      force.setMag(strength);
-      particle.applyForce(force);
-    }
 }
 
 class Line{
