@@ -1,3 +1,9 @@
+/**
+ * Author: Lorenzo Vicente
+ * Description: p5js sketch for ART151
+ */
+
+// Equation "constants"
 let G = 2;
 let D = 200;
 
@@ -7,7 +13,7 @@ let colors;
 let points = false;
 let dSlider;
 let gSlider;
-let initParticle;
+let initNParticle;
 let canvasCounter = 0;
 let palettes;
 
@@ -68,6 +74,7 @@ function draw(){
 }
 
 function mousePressed(){
+  // Create cluster around mouse, except if in slider range
   if(mouseX < window.innerWidth - 200 && mouseY > 100)
     for (let i = 0; i < 5; i++) 
       particles.push(new Particle(random(mouseX-20,mouseX+20),random(mouseY-20,mouseY+20))); 
@@ -77,11 +84,13 @@ function keyPressed(){
   switch(key){
     case'd':
     case'D':
+      // Show particles and not draw
       points = !points;
       background(0);
       break;
     case'r':
     case'R':
+      // Reset picture and particles
       background(0);
       particles.splice(0,particles.length);
       for (let i = 0; i < initNParticle; i++) 
@@ -89,11 +98,13 @@ function keyPressed(){
       break;
     case's':
     case'S':
+      // Save image as jpg
       canvasCounter++;
       saveCanvas(canvas,`picture${canvasCounter}`,'jpg');
       break;
     case'c':
     case'C':
+      // Switch color palette
       background(0);
       colors = palettes.getNextPalette();
       particles.forEach(p=>{
@@ -103,6 +114,7 @@ function keyPressed(){
   
 }
 
+// Container class for arrays of colors
 class ColorPalettes{
   constructor(){
     this.currentColor = 0;
@@ -153,7 +165,6 @@ class ColorPalettes{
   getNextPalette(){
     if(++this.currentColor >= this.palettes.length)
       this.currentColor = 0;
-    // console.log(this.currentColor);
     return this.palettes[this.currentColor];
   }
 

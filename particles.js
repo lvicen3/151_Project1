@@ -17,7 +17,9 @@ class Particle{
     this.acc = createVector(0,0);
   }
   
+  // To be called on every draw
   draw(){
+    // draws the point if option enabled
     if(points){
       noStroke();
       fill(this.color[1]);
@@ -25,6 +27,7 @@ class Particle{
     }
   }
 
+  // Change position based on velocity vector
   update(){
     this.vel.add(this.acc);
     this.acc.set(0,0);
@@ -32,6 +35,7 @@ class Particle{
     this.edges();
   }
 
+  // Check if particle hit an edge, reverse velocity if true
   edges(){
     if(this.pos.x < 0 || this.pos.x > width){
         this.vel.x *= -1;
@@ -41,6 +45,7 @@ class Particle{
     }
   }
 
+  // Check other particles to see if they are in distance to draw and apply G
   checkParticles(particles){
     particles.forEach(particle =>{
       const d = dist(this.pos.x,this.pos.y,particle.pos.x,particle.pos.y);
@@ -56,11 +61,14 @@ class Particle{
   }
 
   // PHYSICS METHODS
+
+  // Apply force vector to acceleration vector
   applyForce(force){
     let f = p5.Vector.div(force,this.mass);
     this.acc.add(f);
   }
 
+  // Apply gravitational equation and call apply force on other particle
   attract(particle){
     let force = p5.Vector.sub(this.pos,particle.pos);
     let distanceSq = constrain(force.magSq(),100,1000);
